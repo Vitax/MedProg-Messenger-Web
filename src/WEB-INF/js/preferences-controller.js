@@ -107,7 +107,7 @@ this.de_sb_messenger = this.de_sb_messenger || {};
 					self.displayStatus(request.status, request.statusText);
 					if (request.status === 200) {
 						var sessionUser = JSON.parse(request.responseText);
-						// self.entityCache.put(sessionUser);
+						self.entityCache.put(sessionUser);
 						de_sb_messenger.APPLICATION.sessionUser = sessionUser;
 					}
 					self.displayUser();

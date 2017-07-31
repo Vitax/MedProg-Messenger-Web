@@ -29,6 +29,52 @@ this.de_sb_messenger = this.de_sb_messenger || {};
 		
 		SUPER.prototype.display.call(this);
 		this.displayStatus(200, "OK");
+		
+		if(!sessionUser.observingReferences && !sessionUser.observedReferences) {
+			sessionUser.observingReferences = [];
+			sessionUser.observedReferences = [];
+		}
+
+		var self = this;
+		var header = {"Accept": "application/json"};
+
+		var indebtedSemaphore = new de_sb_util.Semaphore(1 - 2);
+		var statusAccumulator = new de_sb_util.StatusAccumulator();
+		
+
+		if(!sessionUser.peopleObserved) {
+			var resource = "/services/people/" + sessionUser.identity + "/peopleObserved";
+			de_sb_util.AJAX.invoke(resource, "GET", header, null, null, function (request) {
+				if (request.status === 200) {
+					var people = JSON.parse(request.responseText);
+					people.forEach(function (person) {
+						self.entityCache.put(person);
+						sessionUser.observedReferences.push(person.identity);
+					});
+				}
+				statusAccumulator.offer(request.status, request.statusText);
+			});
+		} 
+
+		if(!sessionUser.peopleObserving) {
+			resource = "/services/people/" + sessionUser.identity + "/peopleObserving";
+				de_sb_util.AJAX.invoke(resource, "GET", header, null, null, function (request) {
+	
+				if (request.status === 200) {
+					var people = JSON.parse(request.responseText);
+					people.forEach(function (person) {
+						self.entityCache.put(person);
+						sessionUser.observingReferences.push(person.identity);
+					});
+				}
+				statusAccumulator.offer(request.status, request.statusText);
+			});
+		}
+
+		indebtedSemaphore.acquire(function () {
+			self.displayStatus(statusAccumulator.status, statusAccumulator.statusText);
+			de_sb_messenger.APPLICATION.preferencesController.display();
+		});
 
 		var mainElement = document.querySelector("main");
 		var sectionElement = document.querySelector("#people-observing-template").content.cloneNode(true).firstElementChild;

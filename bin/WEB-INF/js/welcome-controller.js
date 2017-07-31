@@ -54,7 +54,7 @@ this.de_sb_messenger = this.de_sb_messenger || {};
 			var sessionUser = JSON.parse(request.responseText);
 			sessionUser.observingReferences = [];
 			sessionUser.observedReferences = [];
-			// self.entityCache.put(sessionUser);
+			self.entityCache.put(sessionUser);
 			de_sb_messenger.APPLICATION.sessionUser = sessionUser;
 
 			var indebtedSemaphore = new de_sb_util.Semaphore(1 - 2);
