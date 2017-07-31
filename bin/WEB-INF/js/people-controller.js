@@ -53,7 +53,10 @@ this.de_sb_messenger = this.de_sb_messenger || {};
 					});
 				}
 				statusAccumulator.offer(request.status, request.statusText);
+				indebtedSemaphore.release();
 			});
+		} else {
+			indebtedSemaphore.release();
 		} 
 
 		if(!sessionUser.peopleObserving) {
@@ -68,26 +71,26 @@ this.de_sb_messenger = this.de_sb_messenger || {};
 					});
 				}
 				statusAccumulator.offer(request.status, request.statusText);
+				indebtedSemaphore.release();
 			});
+		} else {
+			indebtedSemaphore.release();
 		}
 
 		indebtedSemaphore.acquire(function () {
-			self.displayStatus(statusAccumulator.status, statusAccumulator.statusText);
-			de_sb_messenger.APPLICATION.preferencesController.display();
+			var mainElement = document.querySelector("main");
+			var sectionElement = document.querySelector("#people-observing-template").content.cloneNode(true).firstElementChild;
+			self.refreshAvatarSlider(sectionElement.querySelector("div.image-slider"), sessionUser.observingReferences, self.toggleObservation);
+			mainElement.appendChild(sectionElement);
+
+			sectionElement = document.querySelector("#people-observed-template").content.cloneNode(true).firstElementChild;
+			self.refreshAvatarSlider(sectionElement.querySelector("div.image-slider"), sessionUser.observedReferences, self.toggleObservation);
+			mainElement.appendChild(sectionElement);
+
+			sectionElement = document.querySelector("#candidates-template").content.cloneNode(true).firstElementChild;
+			sectionElement.querySelector("button").addEventListener("click", self.query.bind(self));
+			mainElement.appendChild(sectionElement);
 		});
-
-		var mainElement = document.querySelector("main");
-		var sectionElement = document.querySelector("#people-observing-template").content.cloneNode(true).firstElementChild;
-		this.refreshAvatarSlider(sectionElement.querySelector("div.image-slider"), sessionUser.observingReferences, this.toggleObservation);
-		mainElement.appendChild(sectionElement);
-
-		sectionElement = document.querySelector("#people-observed-template").content.cloneNode(true).firstElementChild;
-		this.refreshAvatarSlider(sectionElement.querySelector("div.image-slider"), sessionUser.observedReferences, this.toggleObservation);
-		mainElement.appendChild(sectionElement);
-
-		sectionElement = document.querySelector("#candidates-template").content.cloneNode(true).firstElementChild;
-		sectionElement.querySelector("button").addEventListener("click", this.query.bind(this));
-		mainElement.appendChild(sectionElement);
 	}
 
 
